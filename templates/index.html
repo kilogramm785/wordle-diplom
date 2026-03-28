@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Wordle</title>
+
+<style>
+body {
+    background: #121213;
+    color: white;
+    font-family: Arial;
+    text-align: center;
+}
+
+h1 {
+    margin-top: 20px;
+}
+
+#grid {
+    display: grid;
+    grid-template-columns: repeat(5, 60px);
+    gap: 5px;
+    justify-content: center;
+    margin: 20px;
+}
+
+.cell {
+    width: 60px;
+    height: 60px;
+    border: 2px solid #3a3a3c;
+    font-size: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+}
+
+.green { background: #538d4e; }
+.yellow { background: #b59f3b; }
+.gray { background: #3a3a3c; }
+
+input {
+    padding: 10px;
+    font-size: 16px;
+}
+
+button {
+    padding: 10px 20px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Wordle</h1>
+
+<div id="grid"></div>
+
+<input id="wordInput" maxlength="5" placeholder="слово">
+<button onclick="sendWord()">Enter</button>
+
+<script>
+let currentRow = 0;
+
+function createGrid() {
+    const grid = document.getElementById("grid");
+    for (let i = 0; i < 30; i++) {
+        const div = document.createElement("div");
+        div.className = "cell";
+        grid.appendChild(div);
+    }
+}
+
+function sendWord() {
+    const word = document.getElementById("wordInput").value.toLowerCase();
+
+    fetch("/guess", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ word: word })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+
+        const cells = document.querySelectorAll(".cell");
+
+        for (let i = 0; i < word.length; i++) {
+            const index = currentRow * 5 + i;
+
+            cells[index].textContent = word[i];
+            cells[index].classList.add(data[i]);
+        }
+
+        currentRow++;
+        document.getElementById("wordInput").value = "";
+    });
+}
+
+createGrid();
+</script>
+
+</body>
+</html>
