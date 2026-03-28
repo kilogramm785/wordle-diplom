@@ -5,7 +5,6 @@ import mysql.connector
 app = Flask(__name__)
 CORS(app)
 
-# 🔗 Подключение к БД
 db = mysql.connector.connect(
     host="localhost",
     user="root",
@@ -14,7 +13,6 @@ db = mysql.connector.connect(
     charset="utf8mb4"
 )
 
-# 🧠 Логика Wordle (правильная)
 def check_word(secret, guess):
     result = ["gray"] * len(guess)
     secret_list = list(secret)
@@ -33,7 +31,6 @@ def check_word(secret, guess):
 
     return result
 
-# 🎲 Получение случайного слова
 def get_random_word(length):
     cursor = db.cursor()
     query = """
@@ -46,7 +43,7 @@ def get_random_word(length):
     result = cursor.fetchone()
     return result[0] if result else None
 
-# 🎮 Глобальное слово (пока так)
+# изменить потом глобальное слово
 SECRET = get_random_word(5)
 print("SECRET:", SECRET)
 
@@ -65,16 +62,14 @@ def guess():
 
     cursor = db.cursor()
 
-    # 🔍 Проверка существования слова
+    # проверка существования слова
     cursor.execute("SELECT * FROM words WHERE word = %s", (word,))
     if not cursor.fetchone():
         return jsonify({"error": "Слова не существует"}), 400
 
-    # 📏 Проверка длины
     if len(word) != len(SECRET):
         return jsonify({"error": "Неверная длина слова"}), 400
 
-    # 🧠 Проверка слова
     result = check_word(SECRET, word)
 
     return jsonify(result)
@@ -85,6 +80,6 @@ def start():
     SECRET = get_random_word(5)
     return jsonify({"message": "Новая игра начата"})
 
-# 🚀 Запуск
+# Запуск
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run()
