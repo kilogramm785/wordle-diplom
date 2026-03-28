@@ -11,7 +11,7 @@ db = mysql.connector.connect(
     user=os.getenv("DB_USER"),
     password=os.getenv("DB_PASSWORD"),
     database=os.getenv("DB_NAME"),
-    charset="ex61chb6_words"
+    charset="utf8mb4"
 )
 
 def check_word(secret, guess):
