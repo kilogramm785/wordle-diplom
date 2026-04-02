@@ -1,12 +1,12 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Wordle</title>
-
+<title>Угадай слово дня!</title>
 <style>
 body {
-    background: #121213;
+    background: linear-gradient(90deg, #d3b4e9,#ffffff);
     color: white;
     font-family: Arial;
     text-align: center;
@@ -18,52 +18,77 @@ h1 {
 
 #grid {
     display: grid;
-    grid-template-columns: repeat(5, 60px);
-    gap: 5px;
+    grid-template-columns: repeat(5, 65px);
+    gap: 8px;
     justify-content: center;
     margin: 20px;
 }
 
 .cell {
-    width: 60px;
-    height: 60px;
-    border: 2px solid #3a3a3c;
-    font-size: 30px;
+    width: 65px;
+    height: 65px;
+    border-radius: 20px;
+    border: 2px solid #a3a3a3;
+    font-size: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
     text-transform: uppercase;
+    transition: 0.2s;
 }
 
-.green { background: #538d4e; }
-.yellow { background: #b59f3b; }
-.gray { background: #3a3a3c; }
+.green { background: #4caf50 !important; }
+.yellow { background: #ffb300 !important; }
+.gray { background: #616161 !important; }
 
-input {
-    padding: 10px;
-    font-size: 16px;
+#keyboard {
+    margin-top: 20px;
 }
 
-button {
-    padding: 10px 20px;
-    margin-left: 10px;
+.key-row {
+    margin: 5px;
+}
+
+.key {
+    padding: 10px 14px;
+    margin: 3px;
+    border-radius: 8px;
+    border: none;
+	background: #7f7fbb;
+    color: white;
     cursor: pointer;
+    font-size: 14px;
+	outline: none;
+    appearance: none;
+}
+
+.key:hover {
+    background: #5a5a8a;
+}
+
+.special {
+    background: #ff7043;
+	.key { background: #3a3a5a; }
+	.key.green { background: #4caf50; }
+	.key.yellow { background: #ffb300; }
+	.key.gray { background: #555; }
 }
 </style>
 </head>
 
 <body>
 
-<h1>Wordle</h1>
+<h1 style="color: #858def">Угадай слово дня!</h1>
 
 <div id="grid"></div>
 
-<input id="wordInput" maxlength="5" placeholder="слово">
-<button onclick="sendWord()">Enter</button>
+<div id="keyboard"></div>
 
 <script>
 let currentRow = 0;
+let currentInput = "";
 
+// 🎮 создаём сетку
 function createGrid() {
     const grid = document.getElementById("grid");
     for (let i = 0; i < 30; i++) {
@@ -73,15 +98,108 @@ function createGrid() {
     }
 }
 
+// ⌨️ создаём клавиатуру
+function createKeyboard() {
+    const layout = [
+        "йцукенгшщзхъ <",
+        "фывапролджэ",
+        "ячсмитьбю >"
+    ];
+
+    const keyboard = document.getElementById("keyboard");
+
+    layout.forEach(row => {
+        const div = document.createElement("div");
+        div.className = "key-row";
+
+        row.split(" ").forEach(key => {
+            for (let char of key) {
+                const btn = document.createElement("button");
+                btn.className = "key";
+                btn.textContent = char;
+
+                // 🔥 добавили идентификатор
+                btn.dataset.key = char;
+
+                if (char === ">") {
+                    btn.textContent = "Ввод";
+                    btn.classList.add("special");
+                    btn.onclick = sendWord;
+                } else if (char === "<") {
+                    btn.textContent = "<==";
+                    btn.classList.add("special");
+                    btn.onclick = deleteLetter;
+                } else {
+                    btn.onclick = () => addLetter(char);
+                }
+
+                div.appendChild(btn);
+            }
+        });
+
+        keyboard.appendChild(div);
+    });
+}
+
+// ➕ добавить букву
+function addLetter(letter) {
+    if (currentInput.length >= 5) return;
+
+    currentInput += letter;
+    updateGrid();
+}
+
+// ❌ удалить букву
+function deleteLetter() {
+    currentInput = currentInput.slice(0, -1);
+    updateGrid();
+}
+
+// 🔄 обновить отображение
+function updateGrid() {
+    const cells = document.querySelectorAll(".cell");
+
+    for (let i = 0; i < 5; i++) {
+        const index = currentRow * 5 + i;
+        cells[index].textContent = currentInput[i] || "";
+    }
+}
+
+// 🔥 НОВОЕ: обновление клавиатуры
+function updateKeyboard(word, colors) {
+    const buttons = document.querySelectorAll(".key");
+
+    for (let i = 0; i < word.length; i++) {
+        const letter = word[i].toLowerCase();
+        const color = colors[i];
+
+        buttons.forEach(btn => {
+            if (btn.textContent.toLowerCase() === letter) {
+
+                // приоритет
+                if (btn.classList.contains("green")) return;
+                if (btn.classList.contains("yellow") && color === "gray") return;
+
+                btn.classList.remove("gray", "yellow", "green");
+                btn.classList.add(color);
+            }
+        });
+    }
+}
+
+// 📡 отправка слова
 function sendWord() {
-    const word = document.getElementById("wordInput").value.toLowerCase();
+    if (currentInput.length !== 5) {
+        alert("Введите 5 букв");
+        return;
+    }
 
     fetch("/guess", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ word: word })
+        body: JSON.stringify({ word: currentInput })
     })
     .then(res => res.json())
     .then(data => {
@@ -92,19 +210,29 @@ function sendWord() {
 
         const cells = document.querySelectorAll(".cell");
 
-        for (let i = 0; i < word.length; i++) {
+        for (let i = 0; i < 5; i++) {
             const index = currentRow * 5 + i;
-
-            cells[index].textContent = word[i];
             cells[index].classList.add(data[i]);
         }
 
+        // 🔥 ВОТ ЭТО ГЛАВНОЕ
+        updateKeyboard(currentInput, data);
+
         currentRow++;
-        document.getElementById("wordInput").value = "";
+        currentInput = "";
     });
 }
 
+// ⌨️ ввод с физической клавиатуры
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") sendWord();
+    else if (e.key === "Backspace") deleteLetter();
+    else if (/^[а-яё]$/i.test(e.key)) addLetter(e.key);
+});
+
+// 🚀 запуск
 createGrid();
+createKeyboard();
 </script>
 
 </body>
