@@ -6,7 +6,6 @@ import mysql.connector
 app = Flask(__name__)
 CORS(app)
 
-#подключения к БД 
 def get_db():
     return mysql.connector.connect(
         host=os.getenv("DB_HOST"),
@@ -85,7 +84,7 @@ def guess():
             return jsonify({"error": "Неверная длина слова"}), 400
 
         result = check_word(SECRET, word)
-
+        print(" word - ", word, " ",result)
         return jsonify(result)
 
     finally:
