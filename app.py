@@ -36,7 +36,7 @@ def check_word(secret, guess):
 
 #случайное слово
 def get_random_word(length):
-    db = get_db()
+
     cursor = db.cursor()
 
     query = """
@@ -49,10 +49,7 @@ def get_random_word(length):
     cursor.execute(query, (length,))
     result = cursor.fetchone()
 
-    cursor.close()
-    db.close()
-
-    return result[0] if result else None
+    return result
 
 #загаданное слово
 result = get_random_word(5)
