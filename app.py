@@ -40,7 +40,7 @@ def get_random_word(length):
     cursor = db.cursor()
 
     query = """
-    SELECT word FROM words
+    SELECT word, theme FROM words
     WHERE useful = 1 AND CHAR_LENGTH(word) = %s
     ORDER BY RAND()
     LIMIT 1
@@ -55,7 +55,10 @@ def get_random_word(length):
     return result[0] if result else None
 
 #загаданное слово
-SECRET = get_random_word(5)
+result = get_random_word(5)
+
+SECRET = result[0]
+THEME = result[1]
 print("SECRET:", SECRET)
 
 @app.route("/")
@@ -93,9 +96,21 @@ def guess():
 
 @app.route("/start", methods=["GET"])
 def start():
-    global SECRET
-    SECRET = get_random_word(5)
-    return jsonify({"message": "Новая игра начата"})
+
+    global SECRET, THEME
+
+    result = get_random_word(5)
+
+    SECRET = result[0]
+    THEME = result[1]
+
+    print("SECRET:", SECRET)
+    print("THEME:", THEME)
+
+    return jsonify({
+        "message": "Новая игра начата",
+        "theme": THEME
+    })
 
 @app.route("/secret")
 def secret():
