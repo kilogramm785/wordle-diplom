@@ -97,6 +97,9 @@ def start():
     SECRET = get_random_word(5)
     return jsonify({"message": "Новая игра начата"})
 
+@app.route("/secret")
+def secret():
+    return jsonify({"word": SECRET})
 
 if __name__ == "__main__":
     app.run()
