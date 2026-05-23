@@ -1,4 +1,4 @@
-
+//Да, навайбкодил, и что вы мне сделаете?
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -87,7 +87,8 @@ h1 {
 <script>
 let currentRow = 0;
 let currentInput = "";
-
+let gameOver = false;
+	
 // 🎮 создаём сетку
 function createGrid() {
     const grid = document.getElementById("grid");
@@ -143,6 +144,7 @@ function createKeyboard() {
 
 // ➕ добавить букву
 function addLetter(letter) {
+    if (gameOver) return;
     if (currentInput.length >= 5) return;
 
     currentInput += letter;
@@ -189,6 +191,9 @@ function updateKeyboard(word, colors) {
 
 // 📡 отправка слова
 function sendWord() {
+
+    if (gameOver) return;
+
     if (currentInput.length !== 5) {
         alert("Введите 5 букв");
         return;
@@ -203,6 +208,7 @@ function sendWord() {
     })
     .then(res => res.json())
     .then(data => {
+
         if (data.error) {
             alert(data.error);
             return;
@@ -215,11 +221,32 @@ function sendWord() {
             cells[index].classList.add(data[i]);
         }
 
-        // 🔥 ВОТ ЭТО ГЛАВНОЕ
         updateKeyboard(currentInput, data);
+
+        // ✅ ПРОВЕРКА ПОБЕДЫ
+        if (data.every(color => color === "green")) {
+            setTimeout(() => {
+                alert("🎉 Победа! Вы угадали слово!");
+            }, 200);
+
+            gameOver = true;
+            return;
+        }
 
         currentRow++;
         currentInput = "";
+
+        // ✅ ПРОВЕРКА ПОРАЖЕНИЯ
+        if (currentRow >= 6) {
+
+            gameOver = true;
+
+            fetch("/secret")
+            .then(res => res.json())
+            .then(secretData => {
+                alert("😢 Вы проиграли! Слово было: " + secretData.word);
+            });
+        }
     });
 }
 
