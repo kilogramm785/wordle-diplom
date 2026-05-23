@@ -59,7 +59,9 @@ result = get_random_word(5)
 
 SECRET = result[0]
 THEME = result[1]
+
 print("SECRET:", SECRET)
+print("THEME:", THEME)
 
 @app.route("/")
 def home():
