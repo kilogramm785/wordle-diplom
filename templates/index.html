@@ -15,6 +15,13 @@ h1 {
     margin-top: 20px;
 }
 
+#theme {
+    color: white;
+    margin-bottom: 20px;
+    font-size: 24px;
+    text-align: center;
+}
+	
 #grid {
     display: grid;
     grid-template-columns: repeat(5, 65px);
@@ -151,7 +158,9 @@ h1 {
 <h1 style="color: #858def">Угадай слово дня!</h1>
 
 <div id="grid"></div>
-
+<h2 id="theme">
+    Тема: ...
+</h2>
 <div id="keyboard"></div>
 <div id="popup" class="popup hidden">
     <div class="popup-content">
@@ -362,9 +371,20 @@ document.addEventListener("keydown", (e) => {
     else if (/^[а-яё]$/i.test(e.key)) addLetter(e.key);
 });
 
+
+
 // 🚀 запуск
 createGrid();
 createKeyboard();
+
+fetch("/theme")
+.then(res => res.json())
+.then(data => {
+
+    document.getElementById("theme").textContent =
+        "Тема: " + data.theme;
+
+});
 </script>
 
 </body>
