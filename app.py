@@ -47,7 +47,10 @@ def get_random_word(length):
     """
 
     cursor.execute(query, (length,))
+
     result = cursor.fetchone()
+
+    print("DB RESULT:", result)
 
     return result
 
