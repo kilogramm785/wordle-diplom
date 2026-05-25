@@ -58,7 +58,7 @@ def get_random_word(length):
 result = get_random_word(5)
 
 SECRET = result
-THEME = result[1]
+THEME = "Theme"
 
 print("SECRET:", SECRET)
 print("THEME:", THEME)
