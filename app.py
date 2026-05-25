@@ -57,7 +57,7 @@ def get_random_word(length):
 #загаданное слово
 result = get_random_word(5)
 
-SECRET = result[0]
+SECRET = result
 THEME = result[1]
 
 print("SECRET:", SECRET)
