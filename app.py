@@ -40,7 +40,7 @@ def get_random_word(length):
     cursor = db.cursor()
 
     query = """
-    SELECT word, theme FROM words
+    SELECT word FROM words
     WHERE useful = 1 AND CHAR_LENGTH(word) = %s
     ORDER BY RAND()
     LIMIT 1
