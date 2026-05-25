@@ -36,7 +36,7 @@ def check_word(secret, guess):
 
 #случайное слово
 def get_random_word(length):
-
+    db = get_db()
     cursor = db.cursor()
 
     query = """
@@ -47,21 +47,16 @@ def get_random_word(length):
     """
 
     cursor.execute(query, (length,))
-
     result = cursor.fetchone()
 
-    print("DB RESULT:", result)
+    cursor.close()
+    db.close()
 
-    return result
+    return result[0] if result else None
 
 #загаданное слово
-result = get_random_word(5)
-
-SECRET = result
-THEME = "Theme"
-
+SECRET = get_random_word(5)
 print("SECRET:", SECRET)
-print("THEME:", THEME)
 
 @app.route("/")
 def home():
@@ -98,21 +93,9 @@ def guess():
 
 @app.route("/start", methods=["GET"])
 def start():
-
-    global SECRET, THEME
-
-    result = get_random_word(5)
-
-    SECRET = result[0]
-    THEME = result[1]
-
-    print("SECRET:", SECRET)
-    print("THEME:", THEME)
-
-    return jsonify({
-        "message": "Новая игра начата",
-        "theme": THEME
-    })
+    global SECRET
+    SECRET = get_random_word(5)
+    return jsonify({"message": "Новая игра начата"})
 
 @app.route("/secret")
 def secret():
