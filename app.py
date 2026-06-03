@@ -101,6 +101,37 @@ def start():
 def secret():
     return jsonify({"word": SECRET})
 
+@app.route("/suggest", methods=["POST"])
+def suggest_word():
+    data = request.get_json(force=True)
+    
+    if not data or "word" not in data:
+        return jsonify({"error": "Нет поля word"}), 400
+    
+    word = data["word"].strip().lower()
+    
+    if len(word) < 3 or len(word) > 10:
+        return jsonify({"error": "Неверная длина слова"}), 400
+    
+    db = get_db()
+    cursor = db.cursor()
+    
+    try:
+        query = """
+        INSERT INTO suggested_words (word, status, created_at)
+        VALUES (%s, 'pending', NOW())
+        """
+        cursor.execute(query, (word,))
+        db.commit()
+        
+        return jsonify({"message": "Слово отправлено на рассмотрение"}), 201
+        
+    except mysql.connector.errors.IntegrityError:
+        return jsonify({"error": "Такое слово уже есть"}), 409
+    finally:
+        cursor.close()
+        db.close()
+
 @app.route("/theme")
 def get_theme():
     db = get_db()
