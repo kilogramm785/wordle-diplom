@@ -101,5 +101,28 @@ def start():
 def secret():
     return jsonify({"word": SECRET})
 
+@app.route("/theme")
+def get_theme():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    
+    try:
+        query = """
+        SELECT theme 
+        FROM words 
+        WHERE word = %s
+        """
+        cursor.execute(query, (SECRET,))
+        result = cursor.fetchone()
+        
+        if result and result['theme']:
+            return jsonify({"theme": result['theme']})
+        else:
+            return jsonify({"theme": "Без темы"})
+            
+    finally:
+        cursor.close()
+        db.close()
+
 if __name__ == "__main__":
     app.run()
