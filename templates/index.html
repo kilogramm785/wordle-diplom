@@ -11,23 +11,20 @@ body {
     text-align: center;
 }
 
-h1 {
-    margin-top: 20px;
-}
+h1 { margin-top: 20px; }
 
 #theme {
-    color: white;
-    margin-bottom: 20px;
+    color: #99a5ff;
+    margin-bottom: 10px;
     font-size: 24px;
-    text-align: center;
 }
-	
+
 #grid {
     display: grid;
-    grid-template-columns: repeat(5, 65px);
+    grid-template-columns: repeat(var(--length), 65px);
     gap: 8px;
     justify-content: center;
-    margin: 20px;
+    margin: 20px auto;
 }
 
 .cell {
@@ -47,109 +44,57 @@ h1 {
 .yellow { background: #ffb300 !important; }
 .gray { background: #616161 !important; }
 
-#keyboard {
-    margin-top: 20px;
-}
+#keyboard { margin-top: 20px; }
 
-.key-row {
-    margin: 5px;
-}
+.key-row { margin: 5px; }
 
 .key {
     padding: 10px 14px;
     margin: 3px;
     border-radius: 8px;
     border: none;
-	background: #7f7fbb;
+    background: #7f7fbb;
     color: white;
     cursor: pointer;
     font-size: 14px;
-	outline: none;
-    appearance: none;
+    outline: none;
 }
 
+.key:hover { background: #5a5a8a; }
 
-	
-.key:hover {
-    background: #5a5a8a;
-}
-
-.special {
-    background: #ff7043;
-	.key { background: #3a3a5a; }
-	.key.green { background: #4caf50; }
-	.key.yellow { background: #ffb300; }
-	.key.gray { background: #555; }
-}
+.special { background: #ff7043; }
 
 .popup {
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.7);
-
     display: flex;
     justify-content: center;
     align-items: center;
-
     z-index: 999;
 }
 
-.hidden {
-    display: none;
-}
+.hidden { display: none; }
 
 .popup-content {
     background: #2b2b45;
     padding: 35px;
     border-radius: 25px;
     width: 320px;
-
     text-align: center;
-
     box-shadow: 0 0 25px rgba(0,0,0,0.5);
-
-    animation: popupShow 0.25s ease;
-}
-
-.popup-content h2 {
-    margin-top: 0;
-    color: white;
-}
-
-.popup-content p {
-    color: #d0d0d0;
-    margin-bottom: 20px;
 }
 
 .popup-content button {
     background: #7f7fbb;
     color: white;
-
     border: none;
     border-radius: 12px;
-
     padding: 12px 22px;
-
     cursor: pointer;
     font-size: 16px;
+    margin: 5px;
 }
-
-.popup-content button:hover {
-    background: #6a6aa8;
-}
-
-@keyframes popupShow {
-    from {
-        transform: scale(0.7);
-        opacity: 0;
-    }
-
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
 </style>
 </head>
 
@@ -157,39 +102,71 @@ h1 {
 
 <h1 style="color: #858def">Угадай слово дня!</h1>
 
-<h2 id="theme" style="color: #99a5ff">
-    Тема: ...
-</h2>
-	
-<div id="grid"></div>
+<h2 id="theme" style="color: #99a5ff">Тема: ...</h2>
 
+<!-- Кнопки переключения режима -->
+<div style="margin: 10px;">
+    <a href="/" style="margin: 0 8px; text-decoration: none;">
+        <button style="padding: 8px 16px;">5 букв</button>
+    </a>
+    <a href="/4" style="margin: 0 8px; text-decoration: none;">
+        <button style="padding: 8px 16px;">4 буквы</button>
+    </a>
+    <a href="/6" style="margin: 0 8px; text-decoration: none;">
+        <button style="padding: 8px 16px;">6 букв</button>
+    </a>
+</div>
+
+<button onclick="showSuggestPopup()" 
+        style="margin: 10px auto; padding: 8px 16px; background: #7f7fbb; color: white; border: none; border-radius: 8px; cursor: pointer;">
+    Предложить слово
+</button>
+
+<div id="grid"></div>
 <div id="keyboard"></div>
+
+<!-- Основной popup -->
 <div id="popup" class="popup hidden">
     <div class="popup-content">
         <h2 id="popup-title"></h2>
         <p id="popup-text"></p>
-
-        <button onclick="newGame()">
-            Новая игра
-        </button>
+        <button onclick="newGame()">Новая игра</button>
     </div>
 </div>
+
+<!-- Popup предложения слова -->
+<div id="suggestPopup" class="popup hidden">
+    <div class="popup-content">
+        <h2>Предложить новое слово</h2>
+        <p style="margin-bottom: 15px;">Введите слово:</p>
+        <input type="text" id="suggestInput" maxlength="10" 
+               style="width: 100%; padding: 12px; font-size: 18px; text-align: center; text-transform: uppercase; margin-bottom: 20px; border-radius: 8px; border: 2px solid #555;">
+        <button onclick="sendSuggestWord()">Отправить</button>
+        <button onclick="hideSuggestPopup()" style="background: #555;">Отмена</button>
+    </div>
+</div>
+
 <script>
+// Получаем длину слова из Flask (через data-length)
+const length = {{ length|default(5) }};
+
 let currentRow = 0;
 let currentInput = "";
 let gameOver = false;
-	
-// 🎮 создаём сетку
+
+// Создаём сетку
 function createGrid() {
     const grid = document.getElementById("grid");
-    for (let i = 0; i < 30; i++) {
+    grid.style.setProperty('--length', length);
+    
+    for (let i = 0; i < 6 * length; i++) {
         const div = document.createElement("div");
         div.className = "cell";
         grid.appendChild(div);
     }
 }
 
-// ⌨️ создаём клавиатуру
+// Создаём клавиатуру (остаётся русской)
 function createKeyboard() {
     const layout = [
         "йцукенгшщзхъ <",
@@ -198,6 +175,7 @@ function createKeyboard() {
     ];
 
     const keyboard = document.getElementById("keyboard");
+    keyboard.innerHTML = "";
 
     layout.forEach(row => {
         const div = document.createElement("div");
@@ -208,8 +186,6 @@ function createKeyboard() {
                 const btn = document.createElement("button");
                 btn.className = "key";
                 btn.textContent = char;
-
-                // 🔥 добавили идентификатор
                 btn.dataset.key = char;
 
                 if (char === ">") {
@@ -223,41 +199,112 @@ function createKeyboard() {
                 } else {
                     btn.onclick = () => addLetter(char);
                 }
-
                 div.appendChild(btn);
             }
         });
-
         keyboard.appendChild(div);
     });
 }
 
-// ➕ добавить букву
 function addLetter(letter) {
-    if (gameOver) return;
-    if (currentInput.length >= 5) return;
-
+    if (gameOver || currentInput.length >= length) return;
     currentInput += letter;
     updateGrid();
 }
 
-// ❌ удалить букву
 function deleteLetter() {
     currentInput = currentInput.slice(0, -1);
     updateGrid();
 }
 
-// 🔄 обновить отображение
 function updateGrid() {
     const cells = document.querySelectorAll(".cell");
-
-    for (let i = 0; i < 5; i++) {
-        const index = currentRow * 5 + i;
+    for (let i = 0; i < length; i++) {
+        const index = currentRow * length + i;
         cells[index].textContent = currentInput[i] || "";
     }
 }
 
-// 🔥 НОВОЕ: обновление клавиатуры
+<script>
+// Получаем длину слова из Flask
+const length = {{ length|default(5) }};
+
+let currentRow = 0;
+let currentInput = "";
+let gameOver = false;
+
+// Создаём сетку
+function createGrid() {
+    const grid = document.getElementById("grid");
+    grid.style.setProperty('--length', length);
+    grid.innerHTML = ""; // очищаем на всякий случай
+    
+    for (let i = 0; i < 6 * length; i++) {
+        const div = document.createElement("div");
+        div.className = "cell";
+        grid.appendChild(div);
+    }
+}
+
+// Создаём клавиатуру
+function createKeyboard() {
+    const layout = [
+        "йцукенгшщзхъ <",
+        "фывапролджэ",
+        "ячсмитьбю >"
+    ];
+
+    const keyboard = document.getElementById("keyboard");
+    keyboard.innerHTML = "";
+
+    layout.forEach(row => {
+        const div = document.createElement("div");
+        div.className = "key-row";
+
+        row.split(" ").forEach(key => {
+            for (let char of key) {
+                const btn = document.createElement("button");
+                btn.className = "key";
+                btn.textContent = char;
+                btn.dataset.key = char;
+
+                if (char === ">") {
+                    btn.textContent = "Ввод";
+                    btn.classList.add("special");
+                    btn.onclick = sendWord;
+                } else if (char === "<") {
+                    btn.textContent = "<==";
+                    btn.classList.add("special");
+                    btn.onclick = deleteLetter;
+                } else {
+                    btn.onclick = () => addLetter(char);
+                }
+                div.appendChild(btn);
+            }
+        });
+        keyboard.appendChild(div);
+    });
+}
+
+function addLetter(letter) {
+    if (gameOver || currentInput.length >= length) return;
+    currentInput += letter;
+    updateGrid();
+}
+
+function deleteLetter() {
+    currentInput = currentInput.slice(0, -1);
+    updateGrid();
+}
+
+function updateGrid() {
+    const cells = document.querySelectorAll(".cell");
+    for (let i = 0; i < length; i++) {
+        const index = currentRow * length + i;
+        cells[index].textContent = currentInput[i] || "";
+    }
+}
+
 function updateKeyboard(word, colors) {
     const buttons = document.querySelectorAll(".key");
 
@@ -267,8 +314,6 @@ function updateKeyboard(word, colors) {
 
         buttons.forEach(btn => {
             if (btn.textContent.toLowerCase() === letter) {
-
-                // приоритет
                 if (btn.classList.contains("green")) return;
                 if (btn.classList.contains("yellow") && color === "gray") return;
 
@@ -279,69 +324,50 @@ function updateKeyboard(word, colors) {
     }
 }
 
-
-
 function showPopup(title, text) {
     document.getElementById("popup-title").textContent = title;
     document.getElementById("popup-text").textContent = text;
-
     document.getElementById("popup").classList.remove("hidden");
 }
 
 function newGame() {
-
     fetch("/start")
     .then(() => {
-
         location.reload();
-
     });
 }
 
-	
-// 📡 отправка слова
 function sendWord() {
-
     if (gameOver) return;
-
-    if (currentInput.length !== 5) {
-        alert("Введите 5 букв");
+    if (currentInput.length !== length) {
+        alert(`Введите ${length} букв`);
         return;
     }
 
     fetch("/guess", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ word: currentInput })
     })
     .then(res => res.json())
     .then(data => {
-
         if (data.error) {
             alert(data.error);
             return;
         }
 
         const cells = document.querySelectorAll(".cell");
-
-        for (let i = 0; i < 5; i++) {
-            const index = currentRow * 5 + i;
+        for (let i = 0; i < length; i++) {
+            const index = currentRow * length + i;
             cells[index].classList.add(data[i]);
         }
 
         updateKeyboard(currentInput, data);
 
-        // ✅ ПРОВЕРКА ПОБЕДЫ
         if (data.every(color => color === "green")) {
             setTimeout(() => {
-                showPopup(
-    				"🎉 Победа!",
-    				"Вы угадали слово!"
-				);
+                showPopup("🎉 Победа!", "Вы угадали слово!");
             }, 200);
-
             gameOver = true;
             return;
         }
@@ -349,63 +375,42 @@ function sendWord() {
         currentRow++;
         currentInput = "";
 
-        // ✅ ПРОВЕРКА ПОРАЖЕНИЯ
         if (currentRow >= 6) {
-
             gameOver = true;
-
             fetch("/secret")
             .then(res => res.json())
             .then(secretData => {
-                showPopup(
-				    "😢 Поражение",
-				    "Слово было: " + secretData.word
-				);
+                showPopup("😢 Поражение", "Слово было: " + secretData.word);
             });
         }
     });
 }
 
-// ⌨️ ввод с физической клавиатуры
+// Ввод с клавиатуры
 document.addEventListener("keydown", (e) => {
+    if (gameOver) return;
     if (e.key === "Enter") sendWord();
     else if (e.key === "Backspace") deleteLetter();
-    else if (/^[а-яё]$/i.test(e.key)) addLetter(e.key);
+    else if (/^[а-яё]$/i.test(e.key)) addLetter(e.key.toLowerCase());
 });
 
-
-
-// 🚀 запуск
-createGrid();
-createKeyboard();
-
-fetch("/theme")
-.then(res => res.json())
-.then(data => {
-
-    document.getElementById("theme").textContent =
-        "Тема: " + data.theme;
-
-});
-
-// Показать popup предложения слова
+// Popup предложения слова
 function showSuggestPopup() {
     document.getElementById("suggestPopup").classList.remove("hidden");
-    document.getElementById("suggestInput").value = "";
-    document.getElementById("suggestInput").focus();
+    const input = document.getElementById("suggestInput");
+    input.value = "";
+    input.focus();
 }
 
-// Скрыть popup
 function hideSuggestPopup() {
     document.getElementById("suggestPopup").classList.add("hidden");
 }
 
-// Отправка слова
 function sendSuggestWord() {
     const word = document.getElementById("suggestInput").value.trim().toLowerCase();
     
-    if (word.length < 4 || word.length > 6) {
-        alert("Слово должно быть от 4 до 6 букв");
+    if (word.length < 3 || word.length > 10) {
+        alert("Слово должно быть от 3 до 10 букв");
         return;
     }
 
@@ -423,28 +428,30 @@ function sendSuggestWord() {
             hideSuggestPopup();
         }
     })
-    .catch(() => {
-        alert("Ошибка соединения");
-    });
+    .catch(() => alert("Ошибка соединения"));
 }
 
+// Запуск
+createGrid();
+createKeyboard();
+
+fetch("/theme")
+.then(res => res.json())
+.then(data => {
+    document.getElementById("theme").textContent = "Тема: " + (data.theme || "Без темы");
+});
 </script>
-<button onclick="showSuggestPopup()" 
-        style="margin: 10px auto; padding: 8px 16px; background: #7f7fbb; color: white; border: none; border-radius: 8px; cursor: pointer;">
-    Предложить слово
-</button>
-<div id="suggestPopup" class="popup hidden">
-    <div class="popup-content">
-        <h2>Предложить новое слово</h2>
-        <p style="margin-bottom: 15px;">Введите слово (3-10 букв):</p>
-        
-        <input type="text" id="suggestInput" 
-               maxlength="10" 
-               style="width: 100%; padding: 12px; font-size: 18px; text-align: center; text-transform: uppercase; margin-bottom: 20px; border-radius: 8px; border: 2px solid #555;">
-        
-        <button onclick="sendSuggestWord()">Отправить</button>
-        <button onclick="hideSuggestPopup()" style="background: #555; margin-left: 10px;">Отмена</button>
-    </div>
-</div>
+
+createGrid();
+createKeyboard();
+
+// Загрузка темы
+fetch("/theme")
+.then(res => res.json())
+.then(data => {
+    document.getElementById("theme").textContent = "Тема: " + (data.theme || "Без темы");
+});
+</script>
+
 </body>
 </html>
