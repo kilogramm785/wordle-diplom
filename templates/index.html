@@ -387,7 +387,64 @@ fetch("/theme")
         "Тема: " + data.theme;
 
 });
-</script>
 
+// Показать popup предложения слова
+function showSuggestPopup() {
+    document.getElementById("suggestPopup").classList.remove("hidden");
+    document.getElementById("suggestInput").value = "";
+    document.getElementById("suggestInput").focus();
+}
+
+// Скрыть popup
+function hideSuggestPopup() {
+    document.getElementById("suggestPopup").classList.add("hidden");
+}
+
+// Отправка слова
+function sendSuggestWord() {
+    const word = document.getElementById("suggestInput").value.trim().toLowerCase();
+    
+    if (word.length < 4 || word.length > 6) {
+        alert("Слово должно быть от 4 до 6 букв");
+        return;
+    }
+
+    fetch("/suggest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ word: word })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+        } else {
+            alert(data.message);
+            hideSuggestPopup();
+        }
+    })
+    .catch(() => {
+        alert("Ошибка соединения");
+    });
+}
+
+</script>
+<button onclick="showSuggestPopup()" 
+        style="margin: 10px auto; padding: 8px 16px; background: #7f7fbb; color: white; border: none; border-radius: 8px; cursor: pointer;">
+    Предложить слово
+</button>
+<div id="suggestPopup" class="popup hidden">
+    <div class="popup-content">
+        <h2>Предложить новое слово</h2>
+        <p style="margin-bottom: 15px;">Введите слово (3-10 букв):</p>
+        
+        <input type="text" id="suggestInput" 
+               maxlength="10" 
+               style="width: 100%; padding: 12px; font-size: 18px; text-align: center; text-transform: uppercase; margin-bottom: 20px; border-radius: 8px; border: 2px solid #555;">
+        
+        <button onclick="sendSuggestWord()">Отправить</button>
+        <button onclick="hideSuggestPopup()" style="background: #555; margin-left: 10px;">Отмена</button>
+    </div>
+</div>
 </body>
 </html>
