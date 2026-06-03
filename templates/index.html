@@ -147,8 +147,8 @@ h1 { margin-top: 20px; }
 </div>
 
 <script>
-// Получаем длину слова из Flask (через data-length)
-const length = {{ length|default(5) }};
+// Получаем длину слова из data-length
+const length = parseInt(document.getElementById("grid").dataset.length) || 5;
 
 let currentRow = 0;
 let currentInput = "";
@@ -159,86 +159,6 @@ function createGrid() {
     const grid = document.getElementById("grid");
     grid.style.setProperty('--length', length);
     grid.innerHTML = "";
-    
-    for (let i = 0; i < 6 * length; i++) {
-        const div = document.createElement("div");
-        div.className = "cell";
-        grid.appendChild(div);
-    }
-}
-
-// Создаём клавиатуру (остаётся русской)
-function createKeyboard() {
-    const layout = [
-        "йцукенгшщзхъ <",
-        "фывапролджэ",
-        "ячсмитьбю >"
-    ];
-
-    const keyboard = document.getElementById("keyboard");
-    keyboard.innerHTML = "";
-
-    layout.forEach(row => {
-        const div = document.createElement("div");
-        div.className = "key-row";
-
-        row.split(" ").forEach(key => {
-            for (let char of key) {
-                const btn = document.createElement("button");
-                btn.className = "key";
-                btn.textContent = char;
-                btn.dataset.key = char;
-
-                if (char === ">") {
-                    btn.textContent = "Ввод";
-                    btn.classList.add("special");
-                    btn.onclick = sendWord;
-                } else if (char === "<") {
-                    btn.textContent = "<==";
-                    btn.classList.add("special");
-                    btn.onclick = deleteLetter;
-                } else {
-                    btn.onclick = () => addLetter(char);
-                }
-                div.appendChild(btn);
-            }
-        });
-        keyboard.appendChild(div);
-    });
-}
-
-function addLetter(letter) {
-    if (gameOver || currentInput.length >= length) return;
-    currentInput += letter;
-    updateGrid();
-}
-
-function deleteLetter() {
-    currentInput = currentInput.slice(0, -1);
-    updateGrid();
-}
-
-function updateGrid() {
-    const cells = document.querySelectorAll(".cell");
-    for (let i = 0; i < length; i++) {
-        const index = currentRow * length + i;
-        cells[index].textContent = currentInput[i] || "";
-    }
-}
-
-<script>
-// Получаем длину слова из Flask
-const length = {{ length|default(5) }};
-
-let currentRow = 0;
-let currentInput = "";
-let gameOver = false;
-
-// Создаём сетку
-function createGrid() {
-    const grid = document.getElementById("grid");
-    grid.style.setProperty('--length', length);
-    grid.innerHTML = ""; // очищаем на всякий случай
     
     for (let i = 0; i < 6 * length; i++) {
         const div = document.createElement("div");
@@ -333,9 +253,7 @@ function showPopup(title, text) {
 
 function newGame() {
     fetch("/start")
-    .then(() => {
-        location.reload();
-    });
+    .then(() => location.reload());
 }
 
 function sendWord() {
@@ -366,9 +284,7 @@ function sendWord() {
         updateKeyboard(currentInput, data);
 
         if (data.every(color => color === "green")) {
-            setTimeout(() => {
-                showPopup("🎉 Победа!", "Вы угадали слово!");
-            }, 200);
+            setTimeout(() => showPopup("🎉 Победа!", "Вы угадали слово!"), 200);
             gameOver = true;
             return;
         }
@@ -387,7 +303,7 @@ function sendWord() {
     });
 }
 
-// Ввод с клавиатуры
+// Ввод с физической клавиатуры
 document.addEventListener("keydown", (e) => {
     if (gameOver) return;
     if (e.key === "Enter") sendWord();
@@ -395,7 +311,7 @@ document.addEventListener("keydown", (e) => {
     else if (/^[а-яё]$/i.test(e.key)) addLetter(e.key.toLowerCase());
 });
 
-// Popup предложения слова
+// Popup "Предложить слово"
 function showSuggestPopup() {
     document.getElementById("suggestPopup").classList.remove("hidden");
     const input = document.getElementById("suggestInput");
@@ -409,7 +325,6 @@ function hideSuggestPopup() {
 
 function sendSuggestWord() {
     const word = document.getElementById("suggestInput").value.trim().toLowerCase();
-    
     if (word.length < 3 || word.length > 10) {
         alert("Слово должно быть от 3 до 10 букв");
         return;
@@ -422,9 +337,8 @@ function sendSuggestWord() {
     })
     .then(res => res.json())
     .then(data => {
-        if (data.error) {
-            alert(data.error);
-        } else {
+        if (data.error) alert(data.error);
+        else {
             alert(data.message);
             hideSuggestPopup();
         }
@@ -436,20 +350,6 @@ function sendSuggestWord() {
 createGrid();
 createKeyboard();
 
-fetch("/theme")
-.then(res => res.json())
-.then(data => {
-    document.getElementById("theme").textContent = "Тема: " + (data.theme || "Без темы");
-});
-
-
-    
-</script>
-
-createGrid();
-createKeyboard();
-
-// Загрузка темы
 fetch("/theme")
 .then(res => res.json())
 .then(data => {
