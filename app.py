@@ -56,6 +56,9 @@ init_secret()  # при запуске
 
 @app.route("/")
 def home():
+    global CURRENT_LENGTH
+    CURRENT_LENGTH = 5
+    init_secret()
     return render_template("index.html", length=5)
 
 @app.route("/4")
