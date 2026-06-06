@@ -104,6 +104,48 @@ h1 { margin-top: 20px; }
 
 <h2 id="theme" style="color: #99a5ff">Тема: ...</h2>
 
+<!-- Кнопки переключения режима -->
+<div style="margin: 10px;">
+    <a href="/" style="margin: 0 8px; text-decoration: none;">
+        <button style="padding: 8px 16px;">5 букв</button>
+    </a>
+    <a href="/4" style="margin: 0 8px; text-decoration: none;">
+        <button style="padding: 8px 16px;">4 буквы</button>
+    </a>
+    <a href="/6" style="margin: 0 8px; text-decoration: none;">
+        <button style="padding: 8px 16px;">6 букв</button>
+    </a>
+</div>
+
+<button onclick="showSuggestPopup()" 
+        style="margin: 10px auto; padding: 8px 16px; background: #7f7fbb; color: white; border: none; border-radius: 8px; cursor: pointer;">
+    Предложить слово
+</button>
+
+<div id="grid" data-length="{{ length|default(5) }}"></div>
+<div id="keyboard"></div>
+
+<!-- Основной popup -->
+<div id="popup" class="popup hidden">
+    <div class="popup-content">
+        <h2 id="popup-title"></h2>
+        <p id="popup-text"></p>
+        <button onclick="newGame()">Новая игра</button>
+    </div>
+</div>
+
+<!-- Popup предложения слова -->
+<div id="suggestPopup" class="popup hidden">
+    <div class="popup-content">
+        <h2>Предложить новое слово</h2>
+        <p style="margin-bottom: 15px;">Введите слово:</p>
+        <input type="text" id="suggestInput" maxlength="10" 
+               style="width: 100%; padding: 12px; font-size: 18px; text-align: center; text-transform: uppercase; margin-bottom: 20px; border-radius: 8px; border: 2px solid #555;">
+        <button onclick="sendSuggestWord()">Отправить</button>
+        <button onclick="hideSuggestPopup()" style="background: #555;">Отмена</button>
+    </div>
+</div>
+    
 <script>
 // Получаем длину слова из data-length
 const length = parseInt(document.getElementById("grid").dataset.length) || 5;
@@ -314,48 +356,6 @@ fetch("/theme")
     document.getElementById("theme").textContent = "Тема: " + (data.theme || "Без темы");
 });
 </script>
-
-<!-- Кнопки переключения режима -->
-<div style="margin: 10px;">
-    <a href="/" style="margin: 0 8px; text-decoration: none;">
-        <button style="padding: 8px 16px;">5 букв</button>
-    </a>
-    <a href="/4" style="margin: 0 8px; text-decoration: none;">
-        <button style="padding: 8px 16px;">4 буквы</button>
-    </a>
-    <a href="/6" style="margin: 0 8px; text-decoration: none;">
-        <button style="padding: 8px 16px;">6 букв</button>
-    </a>
-</div>
-
-<button onclick="showSuggestPopup()" 
-        style="margin: 10px auto; padding: 8px 16px; background: #7f7fbb; color: white; border: none; border-radius: 8px; cursor: pointer;">
-    Предложить слово
-</button>
-
-<div id="grid" data-length="{{ length|default(5) }}"></div>
-<div id="keyboard"></div>
-
-<!-- Основной popup -->
-<div id="popup" class="popup hidden">
-    <div class="popup-content">
-        <h2 id="popup-title"></h2>
-        <p id="popup-text"></p>
-        <button onclick="newGame()">Новая игра</button>
-    </div>
-</div>
-
-<!-- Popup предложения слова -->
-<div id="suggestPopup" class="popup hidden">
-    <div class="popup-content">
-        <h2>Предложить новое слово</h2>
-        <p style="margin-bottom: 15px;">Введите слово:</p>
-        <input type="text" id="suggestInput" maxlength="10" 
-               style="width: 100%; padding: 12px; font-size: 18px; text-align: center; text-transform: uppercase; margin-bottom: 20px; border-radius: 8px; border: 2px solid #555;">
-        <button onclick="sendSuggestWord()">Отправить</button>
-        <button onclick="hideSuggestPopup()" style="background: #555;">Отмена</button>
-    </div>
-</div>
     
 </body>
 </html>
